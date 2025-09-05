@@ -25,6 +25,8 @@ public:
   bool drawDebugRules = true;
   Color32 circleColor = Color::Purple;
 
+  bool isLeader = false;
+
   // Constructor
   explicit Boid(Engine* pEngine, World* pWorld);
 
