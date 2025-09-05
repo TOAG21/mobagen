@@ -21,7 +21,7 @@ string(TIMESTAMP BEFORE "%s")
 CPMAddPackage(
   NAME SDL2
   GITHUB_REPOSITORY libsdl-org/SDL
-  GIT_TAG release-2.26.2
+  GIT_TAG release-2.32.8
   OPTIONS "SDL2_DISABLE_INSTALL ON"
           "SDL2_SHARED OFF"
           "SDL_SHARED OFF"
@@ -58,20 +58,20 @@ message(STATUS "SDL2 TIME: ${DELTASDL}s")
 # SDL_image
 string(TIMESTAMP BEFORE "%s")
 CPMAddPackage(
-  # NAME SDLIMAGE
+  NAME SDL_image
   GITHUB_REPOSITORY libsdl-org/SDL_image
-  GIT_TAG release-2.6.2
+  GIT_TAG release-2.8.8
   OPTIONS "BUILD_SHARED_LIBS OFF"
           "SDL2_SHARED OFF"
           "SDL_SHARED OFF"
           "SDL2IMAGE_INSTALL OFF"
           "SDL2IMAGE_SAMPLES OFF"
-          "SDL2IMAGE_VENDORED ON"
+          "SDL2IMAGE_VENDORED OFF"
           "SDL2IMAGE_BUILD_SHARED_LIBS OFF"
+          "SDL2IMAGE_DEPS_SHARED OFF"
 )
 if(SDL_image_ADDED)
-  include_directories(${SDL_image_SOURCE_DIR})
-  find_package(SDL_image REQUIRED)
+  include_directories(${SDL_image_SOURCE_DIR}/include)
 else()
   message(FATAL_ERROR "SDL IMAGE NOT FOUND")
 endif()
