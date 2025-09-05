@@ -8,7 +8,7 @@ class Boid;
 /* Steer to move toward center of mass of local flockmates */
 class EmergentLeaderRule : public FlockingRule {
 public:
-  explicit EmergentLeaderRule(World* pWorld, float weight = 1., bool isEnabled = true) : FlockingRule(pWorld, Color::DarkGoldenrod, weight, isEnabled) {}
+  explicit EmergentLeaderRule(World* pWorld, float weight = 1., bool isEnabled = true) : FlockingRule(pWorld, Color::NavajoWhite, weight, isEnabled) {}
 
   std::unique_ptr<FlockingRule> clone() override {
     // Créer un pointeur concret en utilisant le constructeur abstrait parent

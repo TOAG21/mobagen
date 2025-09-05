@@ -23,11 +23,28 @@ std::vector<Boid*> Boid::computeBoidNeighborhood() {
   return neighborhood;
 }
 
-Boid::Boid(Engine* pEngine, World* pWorld) : Particle(pEngine), world(pWorld) {}
+Boid::Boid(Engine* pEngine, World* pWorld) : Particle(pEngine), world(pWorld) 
+{
+  float wanderAngleRotLimit = 0.523599f;
+  wanderCoeffecientC = cosf(wanderAngleRotLimit);
+  wanderCoeffecientS = sinf(wanderAngleRotLimit);
+}
 
 void Boid::Update(float deltaTime) {
   Particle::Update(deltaTime);
   std::vector<Boid*> neighborhood = computeBoidNeighborhood();
+
+  if (wanderCooldown > 0.0f)
+  {
+    wanderCooldown -= deltaTime;
+  }
+  if (wanderAngle > 2.0f)
+  {
+    wanderAngle -= 45.0f * deltaTime;
+  }
+  else if (wanderAngle < -2.0f) {
+    wanderAngle += 45.0f * deltaTime;
+  }
 
   for (auto& rule : rules) {
     auto weightedForce = rule->computeWeightedForce(neighborhood, this);

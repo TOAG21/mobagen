@@ -6,6 +6,8 @@
 #include "../behaviours/SeparationRule.h"
 #include "../behaviours/CohesionRule.h"
 #include "../behaviours/AlignmentRule.h"
+#include "../behaviours/WanderRule.h"
+#include "../behaviours/EmergentLeaderRule.h"
 #include "../behaviours/MouseInfluenceRule.h"
 #include "../behaviours/BoundedAreaRule.h"
 #include "../behaviours/WindRule.h"
@@ -21,11 +23,15 @@ World::World(Engine* pEngine) : GameObject(pEngine) {}
 void World::initializeRules() {
   // Starting Rules
   // parameters: desired separation, weight
-  boidsRules.emplace_back(std::make_unique<SeparationRule>(this, 10.f, 1.0f));
+  boidsRules.emplace_back(std::make_unique<SeparationRule>(this, 12.f, 1.5f));
   // parameters: weight
-  boidsRules.emplace_back(std::make_unique<CohesionRule>(this, 1.0f));
+  boidsRules.emplace_back(std::make_unique<CohesionRule>(this, 3.0f));
   // parameters: weight
-  boidsRules.emplace_back(std::make_unique<AlignmentRule>(this, 1.0f));
+  boidsRules.emplace_back(std::make_unique<AlignmentRule>(this, 0.85f));
+  //parameters: weight
+  boidsRules.emplace_back(std::make_unique<WanderRule>(this, 1.0f)); 
+  //parameters: weight
+  boidsRules.emplace_back(std::make_unique<EmergentLeaderRule>(this, 3.0f)); 
   // parameters: weight
   boidsRules.emplace_back(std::make_unique<MouseInfluenceRule>(this, 2.f));
   // parameters: distance from frame border, weight
@@ -39,6 +45,7 @@ void World::initializeRules() {
 
   ImGui::SetCurrentContext(engine->window->imGuiContext);
   SetupImGuiStyle();
+  srand(time(NULL));
 }
 
 void World::applyFlockingRulesToAllBoids() {

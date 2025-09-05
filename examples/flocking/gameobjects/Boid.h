@@ -25,7 +25,14 @@ public:
   bool drawDebugRules = true;
   Color32 circleColor = Color::Purple;
 
+  bool hasLeader = false;
   bool isLeader = false;
+  float wanderAngle = 0.0f;
+  float wanderCooldown = 0.0f;
+  float wanderCoeffecientC;
+  float wanderCoeffecientS;
+  Boid* leader;
+  int followers = 0;
 
   // Constructor
   explicit Boid(Engine* pEngine, World* pWorld);
