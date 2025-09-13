@@ -28,7 +28,6 @@ void HexagonGameOfLife::Step(World& world)
 
 int HexagonGameOfLife::CountNeighbors(World& world, Point2D point) 
 { 
-	std::cout << "*(" << point.x << "," << point.y << ")";
 	int neighbors = 0;
 	int offset = point.y % 2 - 1;
 	for (int row = point.y - 1; row <= point.y + 1; row++) 
@@ -39,7 +38,6 @@ int HexagonGameOfLife::CountNeighbors(World& world, Point2D point)
 			{				
 				if (col == point.x) 
 				{
-					std::cout << " (" << col - 1 << "|," << row << ")";
 					if (world.Get(Point2D(col - 1, row))) 
 					{
 						neighbors++;
@@ -47,14 +45,12 @@ int HexagonGameOfLife::CountNeighbors(World& world, Point2D point)
 					continue;
 					
 				}
-				std::cout << " (" << col << "|," << row << ")";
 				if (world.Get(Point2D(col, row))) 
 				{
 					neighbors++;
 				}
 				continue;
 			}
-			std::cout << " (" << col + offset << "," << row << ")";
 			if (world.Get(Point2D(col + offset, row)))
 			{				
                 neighbors++;
