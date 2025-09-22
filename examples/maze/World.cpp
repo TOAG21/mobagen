@@ -5,10 +5,14 @@
 #include <chrono>
 #include "engine/Engine.h"
 
+#include <cstdlib>
+ #include <ctime>
+
 World::World(Engine* pEngine, int size = 11) : GameObject(pEngine), sideSize(size) {
   generators.push_back(new PrimExample());
   generators.push_back(new RecursiveBacktrackerExample());
   generators.push_back(new HuntAndKillExample());
+  srand(time(0));
 }
 
 World::~World() {
