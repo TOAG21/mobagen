@@ -42,6 +42,7 @@ bool RecursiveBacktrackerExample::Step(World* w) {
       }
 
       stack.push_back(visitables[choice]);
+      w->SetNodeColor(stack.back(), Color::White);
   }
   else
   {
