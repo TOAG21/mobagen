@@ -23,13 +23,40 @@ struct Location
     }
 };
 
-struct MinHeapComp
-{
-    bool operator()(Location one, Location two)
-    { 
-        return one.costEstimated > two.costEstimated;
-    }
-};
+int toIndex(Point2D point, int sideSize) 
+{ 
+    return ((point.y + sideSize / 2) * sideSize + (point.x + sideSize / 2));
+}
+Point2D toPoint(int pos, int sideSize) {
+  bool sign = pos >= 0;
+  int x = pos % sideSize - sideSize / 2;
+  int y = (pos / sideSize) - sideSize / 2;
+  return {x, y};
+}
+
+int getBlockedNear(Point2D pos, World* world)
+{ 
+    int output = 0;
+  if (world->getContent(World::NE(pos))) {
+    output++;
+  }
+  if (world->getContent(World::E(pos))) {
+    output++;
+  }
+  if (world->getContent(World::SE(pos))) {
+    output++;
+  }
+  if (world->getContent(World::SW(pos))) {
+    output++;
+  }
+  if (world->getContent(World::W(pos))) {
+    output++;
+  }
+  if (world->getContent(World::NW(pos))) {
+    output++;
+  }
+  return output;
+}
 
 
 //the cat should calculate distance + blocks in path
@@ -37,38 +64,84 @@ struct MinHeapComp
 Point2D Cat::Move(World* world) {
   auto rand = Random::Range(0, 5);
   auto pos = world->getCat();
+  int ss = world->getWorldSideSize();
 
   //change this to unordered hash
-  std::priority_queue<Location, std::vector<Location>, MinHeapComp> toSearch;
-  toSearch.push(Location(pos, pos, 0, 0));
-  std::priority_queue<Location, std::vector<Location>, MinHeapComp> searched;
+  std::priority_queue<int, std::vector<int>, std::greater<int>> toSearch;
+  toSearch.push(0);
+  std::unordered_map<int, Location> exploring;
+  std::unordered_map<int, Location> explored;
+  exploring.insert({0, Location({0, 0}, {0, 0}, 0, 0)
+});
 
   Location current;
+  std::vector<Location> neighbors;
   Location goal;
   goal.costSoFar = 50;
 
-  while (toSearch.top().costEstimated < goal.costSoFar)
+  while (explored.at(toSearch.top()).costEstimated < goal.costSoFar)
   {
-    current = toSearch.top();
-    //get all neighbors of current
+    current = explored.at(toSearch.top());
+
+    // get all neighbors of current
+    neighbors.push_back(Location(World::NE(current.point), current.point, 0, 0));
+    neighbors.push_back(Location(World::E(current.point), current.point, 0, 0));
+    neighbors.push_back(Location(World::SE(current.point), current.point, 0, 0));
+    neighbors.push_back(Location(World::SW(current.point), current.point, 0, 0));
+    neighbors.push_back(Location(World::W(current.point), current.point, 0, 0));
+    neighbors.push_back(Location(World::NW(current.point), current.point, 0, 0));
+
     //for each {
     //get cost so far (distance + blocked neighbors)
     //estimate final cost (shortest route to border)
-    // 
-    //if its within searched
-    //check if we found a better route
-    //not better route then leave it
-    //better route move it back to tosearch
-    // 
-    //if its already in to search
-    // check if we found a better route
-    // not better route then leave it
-    // better route simply record that
-    //
-    //otherwise we need to add it to open
+    for (Location loc : neighbors) 
+    {
+      loc.costSoFar = current.costSoFar + 1 + (2 * getBlockedNear(loc.point, world));
+      int shortestDistance = 5, test;
+      test = 5 - std::abs(loc.point.x);
+      if (test < shortestDistance) {
+        shortestDistance = test;
+      }
+      test = 5 - std::abs(loc.point.y);
+      if (test < shortestDistance) {
+        shortestDistance = test;
+      }
+      loc.costEstimated = loc.costSoFar + shortestDistance;
 
+      // if its within searched
+      if (explored.contains(toIndex(loc.point, ss)))
+      {
+        // check if we found a better route
+        // not better route then leave it
+        // better route move it back to exploring
+      }
+      // if its already in exploring
+      else if (exploring.contains(toIndex(loc.point, ss)))
+      {
+        // check if we found a better route
+        // not better route then leave it
+        // better route simply record that
+      }
+      else
+      {
+          //add location to exploring
+          //add index to to search
+      }
+    }
+
+    //once were done looking at connections
+    //add it to explored
+    //remove it from exploring
+    //remove it from to search
+
+    //check if the goal has been improved
 
   }
+
+  //we should now have the most effecient route to border
+  // get the trace back from the goal location
+  //output the node that connects to our current position
+
 
   switch (rand) {
     case 0:
