@@ -42,27 +42,27 @@ int getBlockedNear(Point2D pos, World* world)
       output++;
     }
   }
-  if (world->isValidPosition(World::NE(pos))) {
+  if (world->isValidPosition(World::E(pos))) {
     if (world->getContent(World::E(pos))) {
       output++;
     }
   }
-  if (world->isValidPosition(World::NE(pos))) {
+  if (world->isValidPosition(World::SE(pos))) {
     if (world->getContent(World::SE(pos))) {
       output++;
     }
   }
-  if (world->isValidPosition(World::NE(pos))) {
+  if (world->isValidPosition(World::SW(pos))) {
     if (world->getContent(World::SW(pos))) {
       output++;
     }
   }
-  if (world->isValidPosition(World::NE(pos))) {
+  if (world->isValidPosition(World::W(pos))) {
     if (world->getContent(World::W(pos))) {
       output++;
     }
   }
-  if (world->isValidPosition(World::NE(pos))) {
+  if (world->isValidPosition(World::NW(pos))) {
     if (world->getContent(World::NW(pos))) {
       output++;
     }
@@ -90,10 +90,10 @@ Point2D Cat::Move(World* world) {
   int ss = world->getWorldSideSize();
 
   std::vector<int> toSearch;
-  toSearch.push_back(toIndex({0, 0}, ss));
+  toSearch.push_back(toIndex(pos, ss));
   std::unordered_map<int, Location> exploring;
   std::unordered_map<int, Location> explored;
-  exploring.insert({toIndex({0, 0}, ss), Location({0, 0}, {0, 0}, 0, 0)});
+  exploring.insert({toIndex(pos, ss), Location(pos, pos, 0, 0)});
 
   Location current;
   std::vector<Location> neighbors;
@@ -157,7 +157,7 @@ Point2D Cat::Move(World* world) {
           explored.erase(index);
           
           exploring[index].costSoFar = loc.costSoFar;
-          exploring[index].fromPoint = loc.point;
+          exploring[index].fromPoint = loc.fromPoint;
       }
       // if its already in exploring
       else if (exploring.contains(index))
@@ -169,7 +169,7 @@ Point2D Cat::Move(World* world) {
         }
         // better route simply record that
         exploring[index].costSoFar = loc.costSoFar;
-        exploring[index].fromPoint = loc.point;
+        exploring[index].fromPoint = loc.fromPoint;
       }
       else
       {
@@ -204,7 +204,7 @@ Point2D Cat::Move(World* world) {
   while (checkTo != pos)
   {
     checkAt = checkTo;
-    checkTo = explored[toIndex(checkTo, ss)].point;
+    checkTo = explored[toIndex(checkTo, ss)].fromPoint;
   }
   //output the node that connects to our current position
   return checkAt;
