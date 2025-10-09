@@ -18,6 +18,49 @@ int getDistance(Point2D start, Point2D end)
   return output;
 }
 
+int getNetStrength(Point2D pos, World* world, int dir, Point2D edges[]) {
+  int output = 0;
+  for (int i = 0; i < 6; i++)
+  {
+    if (edges[i] == pos)
+      {
+      return 0;
+    }
+  }
+
+  switch (dir) {
+    case 0: 
+    case 3:
+        if (world->getContent(world->NE(pos))) {
+        output++;
+        }
+        if (world->getContent(world->SW(pos))) {
+          output++;
+        }
+        break;
+    case 1:
+    case 4:
+      if (world->getContent(world->E(pos))) {
+        output++;
+      }
+      if (world->getContent(world->W(pos))) {
+        output++;
+      }
+      break;
+    case 2:
+    case 5:
+      if (world->getContent(world->SE(pos))) {
+        output++;
+      }
+      if (world->getContent(world->NW(pos))) {
+        output++;
+      }
+      break;
+    default:
+      break;
+  }
+}
+
 //make a hexagon shaped net around the cat and fill in the weakest links
 //hexagon side size is the exact same as world side size
 Point2D Catcher::Move(World* world) {
@@ -51,8 +94,15 @@ Point2D Catcher::Move(World* world) {
     int newDis = getDistance(cat, checking);
     if (newDis < outputDis && !world->getContent(checking) && newDis != 0)
     {
-        output = checking;
-        outputDis = newDis;
+        if (newDis > 2 && getNetStrength(checking, world, direction, turns) >= 2)
+        {
+            int test = 0;
+        }
+        else 
+        {
+          output = checking;
+          outputDis = newDis;
+        }
     }
     //look at next hex
     switch (direction) {
@@ -114,10 +164,4 @@ Point2D Catcher::Move(World* world) {
   }
 
   return output;
-
-  //should not be reached
-  for (;;) {
-    Point2D p = {Random::Range(-ssO2, ssO2), Random::Range(-ssO2, ssO2)};
-    if (cat.x != p.x && cat.y != p.y && !world->getContent(p)) return p;
-  }
 }
