@@ -129,12 +129,12 @@ Point2D Cat::Move(World* world) {
     for (Location loc : neighbors) 
     {
       loc.costSoFar = current.costSoFar + 1 + (2 * getBlockedNear(loc.point, world));
-      int shortestDistance = 5, test;
-      test = 5 - std::abs(loc.point.x);
+      int shortestDistance = ss/2, test;
+      test = ss/2 - std::abs(loc.point.x);
       if (test < shortestDistance) {
         shortestDistance = test;
       }
-      test = 5 - std::abs(loc.point.y);
+      test = ss/2 - std::abs(loc.point.y);
       if (test < shortestDistance) {
         shortestDistance = test;
       }
@@ -208,23 +208,4 @@ Point2D Cat::Move(World* world) {
   }
   //output the node that connects to our current position
   return checkAt;
-
-
-  //shouldnt hit this. delete later
-  switch (rand) {
-    case 0:
-      return World::NE(pos);
-    case 1:
-      return World::NW(pos);
-    case 2:
-      return World::E(pos);
-    case 3:
-      return World::W(pos);
-    case 4:
-      return World::SW(pos);
-    case 5:
-      return World::SE(pos);
-    default:
-      throw "random out of range";
-  }
 }
