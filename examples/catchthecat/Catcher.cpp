@@ -1,11 +1,86 @@
 #include "Catcher.h"
 #include "World.h"
 
+
+int getDistance(Point2D start, Point2D end) 
+{
+  //from https://www.redblobgames.com/grids/hexagons/#conversions
+  int parity = start.y % 2;
+  int sq = start.x - (start.y - parity) / 2;
+  int sr = start.y;
+
+  parity = end.y % 2;
+  int eq = end.x - (end.y - parity) / 2;
+  int er = end.y;
+
+  Point2D vector = {sq - eq, sr - er};
+  int output = (std::abs(vector.x) + std::abs(vector.x + vector.y) + std::abs(vector.y)) / 2;
+  return output;
+}
+
+//make a hexagon shaped net around the cat and fill in the weakest links
+//hexagon side size is the exact same as world side size
 Point2D Catcher::Move(World* world) {
-  auto side = world->getWorldSideSize() / 2;
+  auto ssO2 = world->getWorldSideSize() / 2;
+  Point2D cat = world->getCat();
+
+  //the hexagon
+  turns[0] = {ssO2, 0};
+  turns[1] = {ssO2 - ssO2 / 2, ssO2};
+  turns[2] = {-ssO2 + ssO2 / 2, ssO2};
+  turns[3] = {-ssO2, 0};
+  turns[4] = {-ssO2 + ssO2 / 2, -ssO2};
+  turns[5] = {ssO2 - ssO2 / 2, -ssO2};
+
+  //this is gonna orient us while we loop through the hexagon
+  int direction = 0;
+  Point2D checking = world->SW(turns[0]);
+  Point2D output = turns[0];
+  int outputDis = ssO2;
+  //starter plan - find the closest unfilled point on the hexagon
+  while (checking != turns[0])
+  {
+    int newDis = getDistance(cat, checking);
+    if (newDis < outputDis && !world->getContent(checking))
+    {
+        output = checking;
+        outputDis = newDis;
+    }
+    //look at next hex
+    switch (direction) {
+      case 0:
+        checking = world->SW(checking);
+        if (checking == turns[direction + 1]) { direction++; }
+        break;
+      case 1:
+        checking = world->W(checking);
+        if (checking == turns[direction + 1]) { direction++; }
+        break;
+      case 2:
+        checking = world->NW(checking);
+        if (checking == turns[direction + 1]) { direction++; }
+        break;
+      case 3:
+        checking = world->NE(checking);
+        if (checking == turns[direction + 1]) { direction++; }
+        break;
+      case 4:
+        checking = world->E(checking);
+        if (checking == turns[direction + 1]) { direction++; }
+        break;
+      case 5:
+        checking = world->SE(checking);
+        break;
+      default:
+        break;
+    }
+  }
+
+  return output;
+
+  //should not be reached
   for (;;) {
-    Point2D p = {Random::Range(-side, side), Random::Range(-side, side)};
-    auto cat = world->getCat();
+    Point2D p = {Random::Range(-ssO2, ssO2), Random::Range(-ssO2, ssO2)};
     if (cat.x != p.x && cat.y != p.y && !world->getContent(p)) return p;
   }
 }
