@@ -214,6 +214,39 @@ Point2D Cat::Move(World* world) {
             goal = current;
         }
     }
+
+    if (toSearch.size() <= 0)
+    {
+      Point2D trapped = world->SW(pos);
+      int direction = 1;
+      while (world->getContent(trapped)) {
+        switch (direction) {
+          case 1:
+            trapped = world->W(pos);
+            break;
+          case 2:
+            trapped = world->NW(pos);
+            break;
+          case 3:
+            trapped = world->NE(pos);
+            break;
+          case 4:
+            trapped = world->E(pos);
+            break;
+          case 5:
+            trapped = world->SE(pos);
+            break;
+          default:
+            break;
+        }
+        direction++;
+        if (direction == 6)
+        {
+          return world->E(pos);
+        }
+      }
+      return trapped;
+    }
   }
 
   //we should now have the most effecient route to border

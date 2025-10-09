@@ -36,12 +36,20 @@ Point2D Catcher::Move(World* world) {
   int direction = 0;
   Point2D checking = world->SW(turns[0]);
   Point2D output = turns[0];
-  int outputDis = ssO2;
+
+  int outputDis;
+  if (world->getContent(turns[0]))
+  {
+    outputDis = ssO2 * 4;
+  }
+  else {
+    outputDis = getDistance(cat, turns[0]);
+  }
   //starter plan - find the closest unfilled point on the hexagon
   while (checking != turns[0])
   {
     int newDis = getDistance(cat, checking);
-    if (newDis < outputDis && !world->getContent(checking))
+    if (newDis < outputDis && !world->getContent(checking) && newDis != 0)
     {
         output = checking;
         outputDis = newDis;
@@ -73,6 +81,35 @@ Point2D Catcher::Move(World* world) {
         break;
       default:
         break;
+    }
+  }
+
+  if (world->getContent(output))
+  {
+    while (world->getContent(output)) {
+      switch (direction) {
+        case 0:
+          output = world->SW(cat);
+          break;
+        case 1:
+          output = world->W(cat);
+          break;
+        case 2:
+          output = world->NW(cat);
+          break;
+        case 3:
+          output = world->NE(cat);
+          break;
+        case 4:
+          output = world->E(cat);
+          break;
+        case 5:
+          output = world->SE(cat);
+          break;
+        default: break;
+      }
+      direction++;
+      direction = direction % 6;
     }
   }
 
