@@ -70,16 +70,22 @@ int getBlockedNear(Point2D pos, World* world)
   return output;
 }
 
-void addSortIndex(std::vector<int>& array, Location& newL, std::unordered_map<int, Location>& exploring, int ss) {
-  for (int i = 0; i < array.size(); i++) 
+int addSortIndex(std::vector<int>& array, Location& newL, std::unordered_map<int, Location>& exploring, int ss, int insCheck) {
+  int index = toIndex(newL.point, ss);
+    for (int i = 0; i < array.size(); i++) 
   {
       if (newL.costEstimated < exploring.at(array[i]).costEstimated)
       {
-        array.insert(array.begin() + i, toIndex(newL.point, ss));
-        return;
+        array.insert(array.begin() + i, index);
+        if (i <= insCheck)
+        {
+          return 1;
+        }
+        return 0;
       }
   }
-  array.push_back(toIndex(newL.point, ss));
+  array.push_back(index);
+  return 0;
 }
 
 //the cat should calculate distance + blocks in path
@@ -101,6 +107,8 @@ Point2D Cat::Move(World* world) {
   goal.costSoFar = 5000;
 
   while (exploring[toSearch[0]].costEstimated < goal.costSoFar) {
+    int preInsertions = 0;
+
     current = exploring[toSearch[0]];
 
     // get all neighbors of current
@@ -128,6 +136,12 @@ Point2D Cat::Move(World* world) {
     //estimate final cost (shortest route to border)
     for (Location loc : neighbors) 
     {
+      int index = toIndex(loc.point, ss);
+
+      if (world->getContent(loc.point))
+      {
+        continue;
+      }
       loc.costSoFar = current.costSoFar + 1 + (2 * getBlockedNear(loc.point, world));
       int shortestDistance = ss/2, test;
       test = ss/2 - std::abs(loc.point.x);
@@ -140,7 +154,6 @@ Point2D Cat::Move(World* world) {
       }
       loc.costEstimated = loc.costSoFar + shortestDistance;
 
-      int index = toIndex(loc.point, ss);
       // if its within searched
       if (explored.contains(index))
       {
@@ -153,7 +166,7 @@ Point2D Cat::Move(World* world) {
           // better route move it back to exploring
           exploring.insert({index, explored[index]});
           //toSearch.push(index);
-          addSortIndex(toSearch, loc, exploring, ss);
+          preInsertions += addSortIndex(toSearch, loc, exploring, ss, preInsertions);
           explored.erase(index);
           
           exploring[index].costSoFar = loc.costSoFar;
@@ -176,17 +189,23 @@ Point2D Cat::Move(World* world) {
           //add location to exploring
           exploring.insert({index, loc});
           //add index to to search
-          addSortIndex(toSearch, loc, exploring, ss);
+          preInsertions += addSortIndex(toSearch, loc, exploring, ss, preInsertions);
       }
     }
 
     //once were done looking at connections
+    int checkI = toIndex(current.point, ss);
+    if (checkI != toSearch[0 + preInsertions])
+    {
+        //breakpoint here
+      int i = 0;
+    }
     //add it to explored
     explored.insert({toIndex(current.point, ss), current});
     //remove it from exploring 
     exploring.erase(toIndex(current.point, ss));
     //remove it from to search
-    toSearch.erase(toSearch.begin());
+    toSearch.erase(toSearch.begin() + preInsertions);
     //check if the goal has been improved
     if (std::abs(current.point.x) == ss/2 || std::abs(current.point.y) == ss/2)
     {
