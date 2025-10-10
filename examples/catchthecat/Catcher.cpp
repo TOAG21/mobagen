@@ -37,7 +37,7 @@ int getDistance(Point2D start, Point2D end)
 }
 int getFiberDistance(Point2D start, Point2D end, int ssO2) 
 { 
-    int catcherCautionR = 6;
+    int catcherCautionR = 7;
     int output = getDistance(start, end);
     if (output == 0) {  return -50;   }
     if (output > catcherCautionR) 
@@ -45,7 +45,7 @@ int getFiberDistance(Point2D start, Point2D end, int ssO2)
       output = catcherCautionR;
   }
     output = catcherCautionR - output;
-  output = output * 4;
+  output = output * 10;
   return output;
 }
 
