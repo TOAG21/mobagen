@@ -88,12 +88,50 @@ int addSortIndex(std::vector<int>& array, Location& newL, std::unordered_map<int
   return 0;
 }
 
+Point2D randFast(World* world, Point2D pos) 
+{
+  Point2D trapped = world->SW(pos);
+  int direction = 1;
+  while (world->getContent(trapped)) {
+    switch (direction) {
+      case 1:
+        trapped = world->W(pos);
+        break;
+      case 2:
+        trapped = world->NW(pos);
+        break;
+      case 3:
+        trapped = world->NE(pos);
+        break;
+      case 4:
+        trapped = world->E(pos);
+        break;
+      case 5:
+        trapped = world->SE(pos);
+        break;
+      case 6:
+        return trapped;
+        break;
+      default:
+        break;
+    }
+    direction++;
+  }
+  return trapped;
+}
+
+
 //the cat should calculate distance + blocks in path
 //add neighborhood to heuristic
 Point2D Cat::Move(World* world) {
   auto rand = Random::Range(0, 5);
   auto pos = world->getCat();
   int ss = world->getWorldSideSize();
+
+  if (caught)
+  {
+    return randFast(world, pos);
+  }
 
   std::vector<int> toSearch;
   toSearch.push_back(toIndex(pos, ss));
@@ -215,38 +253,12 @@ Point2D Cat::Move(World* world) {
         }
     }
 
-    if (toSearch.size() <= 0)
+    if (toSearch.size() <= 0) 
     {
-      Point2D trapped = world->SW(pos);
-      int direction = 1;
-      while (world->getContent(trapped)) {
-        switch (direction) {
-          case 1:
-            trapped = world->W(pos);
-            break;
-          case 2:
-            trapped = world->NW(pos);
-            break;
-          case 3:
-            trapped = world->NE(pos);
-            break;
-          case 4:
-            trapped = world->E(pos);
-            break;
-          case 5:
-            trapped = world->SE(pos);
-            break;
-          default:
-            break;
-        }
-        direction++;
-        if (direction == 6)
-        {
-          return world->E(pos);
-        }
-      }
-      return trapped;
+      caught = true;
+      return randFast(world, pos);
     }
+      
   }
 
   //we should now have the most effecient route to border

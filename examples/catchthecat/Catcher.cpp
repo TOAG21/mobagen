@@ -1,6 +1,24 @@
 #include "Catcher.h"
 #include "World.h"
 
+Fiber::Fiber() {}
+Fiber::Fiber(int nIn, int fIn, int cIn) {
+  netStrength = nIn;
+  fromIndex = fIn;
+  catDist = cIn;
+}
+
+static int toIndex(Point2D point, int sideSize) 
+{ 
+    return ((point.y + sideSize / 2) * sideSize + (point.x + sideSize / 2)); 
+}
+static Point2D toPoint(int pos, int sideSize) 
+{
+  bool sign = pos >= 0;
+  int x = pos % sideSize - sideSize / 2;
+  int y = (pos / sideSize) - sideSize / 2;
+  return {x, y};
+}
 
 int getDistance(Point2D start, Point2D end) 
 {
@@ -17,54 +35,63 @@ int getDistance(Point2D start, Point2D end)
   int output = (std::abs(vector.x) + std::abs(vector.x + vector.y) + std::abs(vector.y)) / 2;
   return output;
 }
-
-int getNetStrength(Point2D pos, World* world, int dir, Point2D edges[]) {
-  int output = 0;
-  for (int i = 0; i < 6; i++)
+int getFiberDistance(Point2D start, Point2D end, int ssO2) 
+{ 
+    int catcherCautionR = 6;
+    int output = getDistance(start, end);
+    if (output == 0) {  return -50;   }
+    if (output > catcherCautionR) 
   {
-    if (edges[i] == pos)
-      {
-      return 0;
-    }
+      output = catcherCautionR;
   }
+    output = catcherCautionR - output;
+  output = output * 4;
+  return output;
+}
 
-  switch (dir) {
-    case 0: 
-    case 3:
-        if (world->getContent(world->NE(pos))) {
-        output++;
-        }
-        if (world->getContent(world->SW(pos))) {
-          output++;
-        }
-        break;
-    case 1:
-    case 4:
-      if (world->getContent(world->E(pos))) {
-        output++;
-      }
-      if (world->getContent(world->W(pos))) {
-        output++;
-      }
-      break;
-    case 2:
-    case 5:
-      if (world->getContent(world->SE(pos))) {
-        output++;
-      }
-      if (world->getContent(world->NW(pos))) {
-        output++;
-      }
-      break;
-    default:
-      break;
+int getStrength(World* world, std::unordered_map<int, Fiber>& net, int ssO2, Point2D hex, int fromI)
+{ 
+    int output = 0;
+    if (world->getContent(hex))
+    {
+      return output;  
+    }
+    output = net.at(fromI).netStrength + 1;
+    //output += getDistance(world->getCat(), hex) % ssO2;
+    return output;
+}
+
+Fiber recursiveStrengthCalc(World* world, std::unordered_map<int, Fiber>& net, int base, int fromI, Fiber output) 
+{
+  Fiber& focus = net.at(fromI);
+  if (focus.fromIndex == fromI)
+  {
+    return output;
   }
+  Fiber& from = net.at(base);
+  int strBonus = 1;
+
+  if (from.netStrength > 0) {    strBonus++;  }
+  if (net.at(focus.fromIndex).netStrength > 0) {  strBonus++;  }
+
+  if (focus.netStrength > from.netStrength + strBonus) 
+  {
+    focus.netStrength = from.netStrength + strBonus;
+  }
+  if (focus.netStrength != 0 && (focus.netStrength + focus.catDist > output.netStrength + output.catDist || output.netStrength == 0)) {
+    output.netStrength = focus.netStrength;
+    output.catDist = focus.catDist;
+    output.fromIndex = fromI;
+  }
+  output = recursiveStrengthCalc(world, net, fromI, focus.fromIndex, output);
+  return output;
 }
 
 //make a hexagon shaped net around the cat and fill in the weakest links
 //hexagon side size is the exact same as world side size
 Point2D Catcher::Move(World* world) {
-  auto ssO2 = world->getWorldSideSize() / 2;
+  auto ss = world->getWorldSideSize();
+  auto ssO2 = ss / 2;
   Point2D cat = world->getCat();
 
   //the hexagon
@@ -86,25 +113,23 @@ Point2D Catcher::Move(World* world) {
     outputDis = ssO2 * 4;
   }
   else {
-    outputDis = getDistance(cat, turns[0]);
+    return turns[0];
   }
+
+  int fromI = toIndex(turns[0], ss);
+  Fiber outputF = Fiber(0, fromI, getFiberDistance(cat, turns[0], ssO2));
+  net[fromI] = Fiber(0, fromI, getFiberDistance(cat, turns[0], ssO2));
+  int str = 0;
+
   //starter plan - find the closest unfilled point on the hexagon
   while (checking != turns[0])
   {
-    int newDis = getDistance(cat, checking);
-    if (newDis < outputDis && !world->getContent(checking) && newDis != 0)
-    {
-        if (newDis > 2 && getNetStrength(checking, world, direction, turns) >= 2)
-        {
-            int test = 0;
-        }
-        else 
-        {
-          output = checking;
-          outputDis = newDis;
-        }
-    }
-    //look at next hex
+    str = getStrength(world, net, ssO2, checking, fromI);
+    net[toIndex(checking, ss)] = Fiber(str, fromI, getFiberDistance(cat, checking, ssO2));
+
+    fromI = toIndex(checking, ss);
+
+      //look at next hex
     switch (direction) {
       case 0:
         checking = world->SW(checking);
@@ -133,6 +158,10 @@ Point2D Catcher::Move(World* world) {
         break;
     }
   }
+
+  //recursive back loop to find highest net weakness
+  outputF = recursiveStrengthCalc(world, net, toIndex(turns[0], ss), fromI, outputF);
+  output = toPoint(outputF.fromIndex, ss);
 
   if (world->getContent(output))
   {

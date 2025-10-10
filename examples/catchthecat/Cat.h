@@ -5,6 +5,7 @@
 
 class Cat : public Agent {
 public:
+  bool caught = false;
   explicit Cat() : Agent(){};
   Point2D Move(World*) override;
 
